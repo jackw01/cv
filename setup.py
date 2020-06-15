@@ -16,6 +16,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'opencv-python>=4.2.0.34',
+        'colorama>=0.4.3'
     ],
     include_package_data=True,
     entry_points={

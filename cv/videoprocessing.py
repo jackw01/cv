@@ -1,3 +1,6 @@
+import math
+import logging
+from colorama import init, Fore, Style
 import numpy as np
 import cv2
 
@@ -29,19 +32,42 @@ CaptureProperties = {
 }
 
 
-def run():
-    cap = cv2.VideoCapture(constants.VideoSource)
+def run(args):
+    init()
+    logging.basicConfig(level=logging.INFO,
+                        format='%(asctime)s.%(msecs)03dZ %(levelname)s: %(message)s',
+                        datefmt='%Y-%m-%dT%H:%M:%S')
 
-    print(f'Using video source {constants.VideoSource}')
+    logging.addLevelName(logging.CRITICAL, Fore.RED + 'critical' + Style.RESET_ALL)
+    logging.addLevelName(logging.ERROR, Fore.RED + 'error' + Style.RESET_ALL)
+    logging.addLevelName(logging.WARNING, Fore.YELLOW + 'warn' + Style.RESET_ALL)
+    logging.addLevelName(logging.INFO, Fore.GREEN + 'info' + Style.RESET_ALL)
+
+    cap = cv2.VideoCapture(args.video_source, cv2.CAP_DSHOW)
+    cap.set(3, args.width)
+    cap.set(4, args.height)
+
+    logging.info(f'Using video source {args.video_source}')
     for i, prop in CaptureProperties.items():
-        print(f'{prop}: {cap.get(i)}')
+        logging.info(f'{prop}: {cap.get(i)}')
 
-    ret, frame = cap.read()
+    horizontal_fov = math.degrees(math.atan(
+        math.tan(math.radians(args.diagonal_fov) / 2)
+        * args.width / math.hypot(args.width, args.height)) * 2)
+    logging.info(f'Calculated horizontal FOV: {horizontal_fov}')
 
+    last_status = True
     while(True):
         ret, frame = cap.read()
-        cv2.imshow('Video', frame)
+        if ret:
+            cv2.imshow('Video', frame)
+        elif ret != last_status:
+            logging.warn('Video stream lost')
+
+        last_status = ret
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
     cap.release()
     cv2.destroyAllWindows()

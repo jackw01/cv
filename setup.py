@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import find_packages, setup, Extension
+from setuptools import find_packages, setup
 
 setup(
     name='led-control',
